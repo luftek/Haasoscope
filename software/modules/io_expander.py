@@ -25,8 +25,8 @@ class IOExpander():
     debug(f'.write: Address 0x{self.address:02x}, Board id {self.boardid}, Write {data}', MODULE, LEVEL)
     self.i2c.send(self.address, data, self.boardid)
 
-  def read(self, reg, read_len):
-    read = self.i2c.read(self.address, reg, read_len, self.boardid)
+  def read(self, reg):
+    read = self.i2c.read(self.address, reg, 1, self.boardid)
     debug(f' .read: Address 0x{self.address:02x}, Board id {self.boardid}, Read  {[reg, read]}', MODULE, LEVEL)
     return read
 
@@ -46,13 +46,13 @@ if __name__ == '__main__':
 
   # Display all registers from ioexpander
   for x in range(0x16):
-    read = ioexpander.read(x, 1)
+    read = ioexpander.read(x)
     print("[0x{:02x}, 0x{:02x}]".format(x, read))
 
   # Read how FPGA is changing LEDs
   while True:
-    x = 0x12
-    read = ioexpander.read(x, 1)
-    print("[0x{:02x}, 0x{:02x}]".format(x, read))
+    reg = 0x12
+    read = ioexpander.read(reg)
+    print("[0x{:02x}, 0x{:02x}]".format(reg, read))
     time.sleep(0.2)
   
