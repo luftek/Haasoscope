@@ -20,7 +20,7 @@ class Serial_Comm():
     debug(f'.write {data}', MODULE, LEVEL_DETAIL)
     self.serial.write(data)
 
-  def read(self, data, read_len):
+  def read(self, read_len):
     read = self.serial.read(read_len)
     debug(f'.write {read}', MODULE, LEVEL_DETAIL)
     return read

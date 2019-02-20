@@ -27,21 +27,22 @@ class I2CComm():
     command = Protocol.I2CCommandSend
     command.send(out)
 
-  def read(self, address, data, read_len, boardid = 0):
-
+  def read(self, address, reg, read_len, boardid = 0):
     command = Protocol.I2CReadData
-    out = [33]
-    out += data
-    out.append(boardid)
+    out = [address, reg, boardid]
     
     debug(f'.read {out}', MODULE, LEVEL)
     
     command.send(out)
     data = command.receive(read_len)
-    debug(f'Read data {data}', MODULE, LEVEL_DETAIL)
+
+    if data != []:
+      data = data[0]
+
+    debug(f'Read data: 0x{data:02x}', MODULE, LEVEL_DETAIL)
     return data
 
 if __name__ == "__main__":
   test = I2CComm()
-  test.send(20, [], boardid = 0) # Device, list of data to device
-  test.read(33, [19], read_len = 1, boardid = 0)
+  test.send(0x20, [], boardid = 0) # Device, list of data to device
+  test.read(0x21, 0x00, read_len = 1, boardid = 0)

@@ -20,16 +20,15 @@ class IOExpander():
     self.address = address
     self.boardid = boardid
     self.i2c = I2CComm()
-    return
 
   def write(self, data):
     debug(f'.write: Address 0x{self.address:02x}, Board id {self.boardid}, Write {data}', MODULE, LEVEL)
     self.i2c.send(self.address, data, self.boardid)
 
-  def read(self, data, read_len):
-    debug(f'.read: Address 0x{self.address:02x}, Board id {self.boardid}, Read {data}', MODULE, LEVEL)
-    self.i2c.read(self.address,[19], 1, self.boardid)
-
+  def read(self, reg, read_len):
+    read = self.i2c.read(self.address, reg, read_len, self.boardid)
+    debug(f' .read: Address 0x{self.address:02x}, Board id {self.boardid}, Read  {[reg, read]}', MODULE, LEVEL)
+    return read
 
 if __name__ == '__main__':
   import time
@@ -39,8 +38,21 @@ if __name__ == '__main__':
   ioexpander.write([0x01, 0x00]) # GPIOB Output
 
   # Turn LEDs on/off
-  while True:
+  for x in range(10):
     ioexpander.write([0x12, 0x0a])
     time.sleep(0.25)
     ioexpander.write([0x12, 0x05])
     time.sleep(0.25)
+
+  # Display all registers from ioexpander
+  for x in range(0x16):
+    read = ioexpander.read(x, 1)
+    print("[0x{:02x}, 0x{:02x}]".format(x, read))
+
+  # Read how FPGA is changing LEDs
+  while True:
+    x = 0x12
+    read = ioexpander.read(x, 1)
+    print("[0x{:02x}, 0x{:02x}]".format(x, read))
+    time.sleep(0.2)
+  

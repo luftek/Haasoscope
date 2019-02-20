@@ -30,8 +30,9 @@ class Command():
   def receive(self, data_len):
     if self.read == False:
       raise Exception(f'This command expects no data from board')
-    recv = []
-    return
+    
+    data = comm.read(data_len)
+    return data
 
 
 class CommandRange():
