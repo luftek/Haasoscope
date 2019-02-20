@@ -1,5 +1,5 @@
 from debug import debug
-from protocol import *
+from protocol import Protocol
 
 MODULE = "I2C"
 LEVEL = 3
