@@ -1,35 +1,46 @@
 from serial import Serial
-from struct import unpack
 import time
 
-serialtimeout=1.0
-ser=Serial("COM5",1500000,timeout=serialtimeout)
+serialtimeout=0.5
+ser=Serial("COM16",1500000,timeout=serialtimeout)
 waitlittle = .1 #seconds
+board = 0
 
 #This is a _minimal_ set of example commands needed to send to a board to initialize it properly
+commands = [
+    [0],           # Set first board id to 0
+    [20 + board],  # Board is last board
+    [135, 0, 100], # serialdelaytimerwait of 100
+    [30 + board]   # Select board as active
+]
 
-ser.write(chr(0)); ser.write(chr(20)) #set board id to 0
-time.sleep(waitlittle)
-ser.write(chr(135)); ser.write(chr(0)); ser.write(chr(100)); #serialdelaytimerwait of 100
-time.sleep(waitlittle)
+for command in commands:
+    ser.write(command)
+    time.sleep(waitlittle)
 
-oldtime=time.time()
-boa=0 # board to get ID from
-ser.write(chr(30+boa)) #make the next board active (serial_passthrough 0)
-ser.write(chr(142)) #request the unique ID
-rslt = ser.read(8)
-byte_array = unpack('%dB'%len(rslt),rslt) #Convert serial data to array of numbers
-uniqueID = ''.join(format(x, '02x') for x in byte_array) 
-print "got uniqueID",uniqueID,"for board",boa," in",round((time.time()-oldtime)*1000.,2),"ms"
+#request the unique ID
+_start=time.time()
+ser.write([142]) 
+result = ser.read(8)
+if len(result) < 8:
+  print('serial timeout')
+else:  
+  uniqueID = ''
+  for x in result:
+    uniqueID += f'{x:02x}'
+  diff = (time.time()-_start)
+  print(f'uniqueID: 0x{uniqueID} in {diff:6.3f} s')
 
-oldtime=time.time()
-boa=0 # board to get firmware version from
-ser.write(chr(30+boa)) #make the next board active (serial_passthrough 0)
-ser.write(chr(147)) #request the firmware version byte
-ser.timeout=0.1; rslt = ser.read(1); ser.timeout=serialtimeout # reduce the serial timeout temporarily, since the old firmware versions will return nothing for command 147
-byte_array = unpack('%dB'%len(rslt),rslt)
-firmwareversion=0
-if len(byte_array)>0: firmwareversion=byte_array[0]
-print "got firmwareversion",firmwareversion,"for board",boa,"in",round((time.time()-oldtime)*1000.,2),"ms"
+#request the firmware version
+_start=time.time()
+ser.write([147]) 
+result = ser.read(1)
+if len(result) > 0:
+  fw = result[0]
+else:
+  fw = 0
+  print('serial timeout')
+diff = (time.time()-_start)
+print(f'fw: {fw} in {diff:6.3f} s')
 
 ser.close()

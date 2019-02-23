@@ -2,77 +2,66 @@ from serial import Serial
 from struct import unpack
 import time
 
-serialtimeout=10.0
-ser=Serial("COM5",1500000,timeout=serialtimeout)
+serialtimeout=0.5
+ser=Serial("COM16",1500000,timeout=serialtimeout)
 waitlittle = .1 #seconds
 
 #This is a _minimal_ set of example commands needed to send to a board to initialize it properly
 commands = [
-    [0, 20], #Set board id to 0
+    [0],   # Set first board id to 0
+    [20],  # Board is last board
     [135, 0, 100], #serialdelaytimerwait of 100
     [122, 0, 10],  #number of samples 10
     [123, 0], #send increment
     [124, 3], #downsample 3
     [125, 1], #tickstowait 1
-    [136, 2, 32,  0,   0, 255, 200], # io expander 1A on - use as outputs
-    [136, 2, 32,  1,   0, 255, 200], # io expander 1B on - use as outputs
-    [136, 2, 33,  0,   0, 255, 200], # io expander 2A on - use as outputs
-    [136, 2, 33,  1, 255, 255, 200], # io expander 2B on - use as inputs !
-    [136, 2, 33, 13, 255, 255, 200], # io expander 2B enable pull-up resistors!
-    [136, 2, 32, 18, 240, 255, 200], # init
-    [136, 2, 32, 19, 15, 255, 200], # init (and turn on ADCs!)
-    [136, 2, 33, 18,  0, 255, 200], # init
-    # [136, 2, 33, 19,  0, 255, 200], # init
-    [131, 8,  0], # adc offset
-    [131, 6, 16], #offset binary output
-    # [131, 6, 80], #test pattern output
-    [131, 4, 36], #300 Ohm termination A
-    [131, 5, 36], #300 Ohm termination B
-    [131, 1,  0], #not multiplexed
-    [136, 3, 96, 80, 136, 22, 0], # channel 0 , board 0 calib 
-    [136, 3, 96, 82, 136, 22, 0], # channel 1 , board 0 calib 
-    [136, 3, 96, 84, 136, 22, 0], # channel 2 , board 0 calib 
-    [136, 3, 96, 86, 136, 22, 0], # channel 3 , board 0 calib 
+    [136, 2, 0x20, 0x00,    0, 255, 200], # io expander 1A on - use as outputs
+    [136, 2, 0x20, 0x01,    0, 255, 200], # io expander 1B on - use as outputs
+    [136, 2, 0x21, 0x00,    0, 255, 200], # io expander 2A on - use as outputs
+    [136, 2, 0x21, 0x01, 0xff, 255, 200], # io expander 2B on - use as inputs !
+    [136, 2, 0x20, 0x12, 0xf0, 255, 200], # init
+    [136, 2, 0x20, 0x13, 0x0f, 255, 200], # init (and turn on ADCs!)
+    [136, 2, 0x21, 0x12,    0, 255, 200], # init
+    [136, 2, 0x21, 0x13, 0xf0, 255, 200], # io expander 2B enable pull-up resistors!
 ]
 
 for command in commands:
     ser.write(bytearray(command))
     time.sleep(waitlittle)
 
-# OK, we're set up! Now we can read events and get good data out.
+#request the unique ID
+_start=time.time()
+ser.write([142]) 
+result = ser.read(8)
+if len(result) < 8:
+  print('serial timeout')
+else:  
+  uniqueID = ''
+  for x in result:
+    uniqueID += f'{x:02x}'
+  diff = (time.time()-_start)
+  print(f'uniqueID: 0x{uniqueID} in {diff:6.3f} s')
 
-oldtime=time.time()
-boa=0 # board to get ID from
-ser.write(bytearray([30+boa, 142])) #request the unique ID
-rslt = ser.read(8)
-byte_array = unpack('%dB'%len(rslt),rslt) #Convert serial data to array of numbers
-uniqueID = ''.join(format(x, '02x') for x in byte_array) 
-print "got uniqueID",uniqueID,"for board",boa," in",round((time.time()-oldtime)*1000.,2),"ms"
+#request the firmware version
+_start=time.time()
+ser.write([147]) 
+result = ser.read(1)
+if len(result) > 0:
+  fw = result[0]
+else:
+  fw = 0
+  print('serial timeout')
+diff = (time.time()-_start)
+print(f'fw: {fw} in {diff:6.3f} s')
 
-oldtime=time.time()
-boa=0 # board to get firmware version from
-ser.write(bytearray([30+boa, 147])) #request the firmware version
-ser.timeout=0.1; rslt = ser.read(1); ser.timeout=serialtimeout # reduce the serial timeout temporarily, since the old firmware versions will return nothing for command 147
-byte_array = unpack('%dB'%len(rslt),rslt)
-firmwareversion=0
-if len(byte_array)>0: firmwareversion=byte_array[0]
-print "got firmwareversion",firmwareversion,"for board",boa,"in",round((time.time()-oldtime)*1000.,2),"ms"
-
-oldtime=time.time()
+_start=time.time()
 for i in range(2):
-    ser.write(bytearray([146, 33, 19, 0]))# #request the IO expander data from 2B for board 0
-    rslt = ser.read(1)
-    #print "result is length",len(rslt)
-    if len(rslt)>0: 
-        byte_array = unpack('%dB'%len(rslt),rslt)
-        print i,byte_array[0]
-print "got i2c data in",round((time.time()-oldtime)*1000./2.,2),"ms"
-
-ser.write(bytearray([100, 10])) # arm trigger and get an event
-rslt = ser.read(40)#[0:10]
-byte_array = unpack('%dB'%len(rslt),rslt)
-
-for i in range(4):
-    print byte_array[10*i : 10*i+10] # print out the 4 channels
+    reg = 0x12 + i
+    ser.write([146, 0x21, reg, 0]) #request the IO expander data from 2B for board 0
+    result = ser.read(1)
+    if len(result) > 0: 
+        print(f'reg: 0x{reg:02x}, val: 0x{result[0]:02x}')
+diff = diff = (time.time()-_start)
+print(f'got i2c data in {diff:6.3f} s')
 
 ser.close()
