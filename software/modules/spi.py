@@ -24,7 +24,7 @@ if __name__ == "__main__":
   #
   # Make sure you run serial_read.py before running this code
   # It will initialize board and all components.
-  # SPI commands will affect output
+  # SPI commands will then affect output
   #
   """
 
