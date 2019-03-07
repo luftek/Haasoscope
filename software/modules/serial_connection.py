@@ -1,4 +1,5 @@
 from debug import debug # Debug options
+from init_dummy import InitDummy
 
 MODULE = "UART"
 LEVEL = 3
@@ -13,14 +14,7 @@ class Serial_Comm():
     port = "COM16"
     timeout = 1.0
     self.serial = Serial(port,bitrate,timeout=timeout,stopbits=2)
-    commands = [
-      # Board selection, FPGA var setting
-      [0],   # Set first board id to 0
-      [20],  # Board is last board
-      [30],  # Board 0 is active
-    ]
-    for command in commands:
-      self.serial.write(command)
+    self.init = InitDummy(self.serial)
 
   def write(self, data):
     debug(f'.write {data}', MODULE, LEVEL_DETAIL)
@@ -28,7 +22,7 @@ class Serial_Comm():
 
   def read(self, read_len):
     read = self.serial.read(read_len)
-    debug(f'.write {read}', MODULE, LEVEL_DETAIL)
+    debug(f'.read {read}', MODULE, LEVEL_DETAIL)
     return read
 
 if __name__ == 'main':

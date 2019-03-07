@@ -1,5 +1,4 @@
 from serial import Serial
-from struct import unpack
 import time
 
 ser=Serial("COM16",1500000,timeout=1.0)

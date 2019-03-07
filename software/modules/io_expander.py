@@ -66,4 +66,4 @@ if __name__ == '__main__':
   for x in range(5):
     ioexpander.write([0x13, out])# GPIOB Output
     out ^= 0x30
-    time.sleep(1)
+    time.sleep(2)

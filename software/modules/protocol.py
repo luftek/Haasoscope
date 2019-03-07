@@ -31,6 +31,7 @@ class Command():
     if self.read == False:
       raise Exception(f'This command expects no data from board')
     
+    debug(f'{self.name}.receive', MODULE, LEVEL)
     data = comm.read(data_len)
     return data
 
@@ -64,8 +65,9 @@ class CommandRange():
     if self.read == False:
       raise Exception(f'This command expects no data from board')
     
-    recv = []
-    return recv
+    debug(f'{self.name}.receive', MODULE, LEVEL)
+    data = comm.read(data_len)
+    return data
 
 
 class Protocol():

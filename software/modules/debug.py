@@ -3,7 +3,7 @@ import time
 MODULE = "DEBUG"
 LEVEL = 3
 DEBUG = True
-LEVEL_OUTPUT = 1
+LEVEL_OUTPUT = 3
 
 __start = time.time()
 def debug(string, module, level):
