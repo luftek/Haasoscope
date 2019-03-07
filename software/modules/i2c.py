@@ -14,8 +14,7 @@ class I2CComm():
       raise Exception(f'This command accepts address and {DATA_LEN} bytes of data')
     
     # Construct frame
-    out = [len(data)]
-    out.append(address)
+    out = [len(data), address]
     out += data
     for x in range(DATA_LEN - len(data)):
       out.append(0xff) # Padding
