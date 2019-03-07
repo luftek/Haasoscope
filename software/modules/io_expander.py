@@ -13,6 +13,9 @@ LEVEL_DETAIL = 4
     - output/input register
     - output set
     - input read?
+
+    Provide named bits, functionality assigned by HW
+    What to do with revision?, There were some changes to the board
 """
 
 class IOExpander():
@@ -50,9 +53,17 @@ if __name__ == '__main__':
     print("[0x{:02x}, 0x{:02x}]".format(x, read))
 
   # Read how FPGA is changing LEDs
-  while True:
+  for x in range(20):
     reg = 0x12
     read = ioexpander.read(reg)
     print("[0x{:02x}, 0x{:02x}]".format(reg, read))
     time.sleep(0.2)
   
+  # Turn ADCs on and off
+  ioexpander = IOExpander(address = 0x20, boardid = 0)
+  ioexpander.write([0x01, 0x00]) # GPIOB Output
+  out = 0x00
+  for x in range(5):
+    ioexpander.write([0x13, out])# GPIOB Output
+    out ^= 0x30
+    time.sleep(1)
