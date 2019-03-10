@@ -72,13 +72,13 @@ class CommandRange():
 
 class Protocol():
   BoardDefineID = CommandRange('BoardDefineID', 0, 9)
-  BoardEventSendData = CommandRange('BoardEventSendData', 10, 19, read=True)
+  BoardEventDataRecv= CommandRange('BoardEventDataRecv', 10, 19, read=True)
   BoardIsLast = CommandRange('BoardIsLast', 20, 29)
   BoardActivate = CommandRange('BoardActivate', 30, 39)
   TriggerArm = Command('TriggerArm', 100)
   TriggerRoll = Command('TriggerRoll', 101)
   TriggerRollNot = Command('TriggerRollNot', 102)
-  ADCSlowSamplesSend = CommandRange('ADCSlowSamplesSend', 110, 119, read=True)
+  ADCSlowSamplesRecv = CommandRange('ADCSlowSamplesRecv', 110, 119, read=True)
   ADCSlowSamplesConf = Command('ADCSlowSamplesConf', 120, 2)
   TriggerPoint = Command('TriggerPoint', 121, 2)
   ADCFastSamplesConf = Command('ADCFastSamplesConf', 122, 2)
@@ -105,7 +105,7 @@ class Protocol():
   HighResModeToggle = Command('HighResModeToggle', 143)
   ExternalTriggerPinToggle = Command('ExternalTriggerPinToggle', 144)
   ChannelSelectRecvData = Command('ChannelSelectRecvData', 145, 1)
-  I2CReadData = Command('I2CReadData', 146, 3, read=True)
+  I2CDataRecv = Command('I2CDataRecv', 146, 3, read=True)
   FirmwareVersionRecv = Command('FirmwareVersionRecv', 147, read=True)
 
 if __name__ == '__main__':
@@ -155,7 +155,7 @@ if __name__ == '__main__':
   except Exception as error:
     print('6. Caught this error: ' + repr(error)) 
 
-  command = Protocol.BoardEventSendData
+  command = Protocol.BoardEventDataRecv
   command.receive()
 
   print("ok")

@@ -27,7 +27,7 @@ class I2CComm():
     command.send(out)
 
   def read(self, address, reg, read_len, boardid = 0):
-    command = Protocol.I2CReadData
+    command = Protocol.I2CDataRecv
     out = [address, reg, boardid]
     
     debug(f'.read {out}', MODULE, LEVEL)

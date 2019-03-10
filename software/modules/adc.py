@@ -52,7 +52,7 @@ class ADC():
 
   def read_channels(self):
     Protocol.TriggerArm.send()
-    command = Protocol.BoardEventSendData
+    command = Protocol.BoardEventDataRecv
     command.send(self.boardid)
     data = command.receive(self.length * 4)
     return data
